@@ -25,13 +25,14 @@ export default function Appointment() {
   };
 
 
-  const apiUrl = process.env.REACT_APP_API_URL;
+  const API = import.meta.env.VITE_API_URL;
+
 
   // ✅ Step 1: Send OTP
   const handleSendOtp = async () => {
     if (!formData.email) return alert("Please enter email first!");
     try {
-      const res = await fetch("http://127.0.0.1:1000/api/send-otp", {
+      const res = await fetch(`${API}/api/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: formData.email }),
@@ -52,7 +53,7 @@ export default function Appointment() {
   // ✅ Step 2: Verify OTP
   const handleVerifyOtp = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:1000/api/verify-otp", {
+      const res = await fetch(`${API}/api/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: formData.email, otp }),
@@ -83,7 +84,7 @@ export default function Appointment() {
     setSuccess(false);
 
     try {
-      const res = await fetch("http://127.0.0.1:1000/api/appointments", {
+      const res = await fetch(`${API}/api/appointments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

@@ -33,26 +33,35 @@ router.post("/send-otp", async (req, res) => {
   const otp = Math.floor(100000 + Math.random() * 900000);
   otpStore[email] = otp;
 
+ router.post("/send-otp", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      message: "Email is required to send OTP",
+    });
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000);
+  otpStore[email] = otp;
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
       user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+      pass: process.env.EMAIL_PASS,
     },
+    tls: {
+      rejectUnauthorized: false,
+    }
   });
 
   const mailOptions = {
-    from: '"Nandini’s Make-Over 💄" <nandinikadam631@gmail.com>',
+    from: process.env.EMAIL_USER,
     to: email,
-    subject: "✨ OTP Verification for Appointment",
-    html: `
-      <div style="font-family: Poppins, sans-serif; background: #fff0f6; padding: 20px; border-radius: 10px; border: 1px solid #f8bbd0;">
-        <h2 style="color: #e91e63; text-align: center;">💅 Nandini's Make-Over Studio</h2>
-        <p style="font-size: 15px; color: #444;">Use the OTP below to verify your booking.</p>
-        <h1 style="background:#e91e63; color:#fff; padding:15px; text-align:center; border-radius:8px; letter-spacing:5px;">${otp}</h1>
-        <p style="color: #555;">This OTP is valid for <b>5 minutes</b>.</p>
-      </div>
-    `,
+    subject: "OTP Verification",
+    html: `<h1>${otp}</h1>`,
   };
 
   try {

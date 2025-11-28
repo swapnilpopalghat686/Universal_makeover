@@ -7,9 +7,10 @@ const HOST = '0.0.0.0'
 const PORT =  process.env.PORT || 1000 
 
 // middleware
+app.use(express.json())
 app.use(express.static('public'))
 app.use(express.urlencoded({ extended: true }))
-app.use(express.json())
+
 
 
 // ******************************************************
