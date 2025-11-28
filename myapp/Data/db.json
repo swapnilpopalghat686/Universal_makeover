@@ -1,0 +1,40 @@
+{
+  "appointments": [
+    {
+      "id": "4e2a",
+      "name": "Swapnil Popalghat",
+      "email": "swapnilpopalghat44@gmail.com",
+      "phone": "09067823609",
+      "service": "Skin Care",
+      "date": "2025-10-19",
+      "message": "Bjasxdnasmcdnasidnascd"
+    },
+    {
+      "id": "daee",
+      "name": "Sai jagtap",
+      "email": "sai@gmail.com",
+      "phone": "9078567653",
+      "service": "Bridal Makeup",
+      "date": "2025-10-20",
+      "message": "sgdsgg sgcsd gfsdjh "
+    },
+    {
+      "id": "4d10",
+      "name": "Swapnil Popalghat",
+      "email": "swapnilpopalghat44@gmail.com",
+      "phone": "09067823609",
+      "service": "Bridal Makeup",
+      "date": "2025-10-20",
+      "message": "ddvadvasdfv"
+    },
+    {
+      "id": "696e",
+      "name": "Swapnil Popalghat",
+      "email": "swapnilpopalghat44@gmail.com",
+      "phone": "09067823609",
+      "service": "Bridal Makeup",
+      "date": "2025-10-20",
+      "message": "fsfgsdfsdf"
+    }
+  ]
+}
