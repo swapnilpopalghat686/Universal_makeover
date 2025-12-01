@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const users = require("../model/userSchema");
-const sendMail = require("./utils/sendMail");
+const sendMail = require("../utils/sendMail");
 
 // ------------------ CREATE APPOINTMENT ------------------
 router.post("/appointments", async (req, res) => {
