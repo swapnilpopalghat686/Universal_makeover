@@ -22,7 +22,7 @@ const cors = require("cors");
 // var cors = require('cors')
 
 // all origin
-app.use(cors())
+app.use(cors({ origin: "*" }));
 
 // specific origin
 // app.use({origin:'http://localhost:5173/'})
