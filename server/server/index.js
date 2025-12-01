@@ -4,6 +4,7 @@ const express = require('express')
 const app = express()
 
 
+
 const HOST = '0.0.0.0'
 const PORT =  process.env.PORT || 1000 
 
@@ -17,7 +18,8 @@ app.use(express.urlencoded({ extended: true }))
 // ******************************************************
 
 // cors
-var cors = require('cors')
+const cors = require("cors");
+// var cors = require('cors')
 
 // all origin
 app.use(cors())
