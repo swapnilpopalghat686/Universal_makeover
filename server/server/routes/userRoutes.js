@@ -3,7 +3,7 @@ const router = express.Router();
 const users = require("../model/userSchema");
 const { Resend } = require("resend");
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+
 
 // Temporary OTP storage
 let otpStore = {};
@@ -23,7 +23,10 @@ router.get("/verify-otp", (req, res) => {
 
 // ------------------ SEND OTP ------------------
 router.post("/send-otp", async (req, res) => {
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
   const { email } = req.body;
+
 
   if (!email) {
     return res.status(400).json({
