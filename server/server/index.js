@@ -67,6 +67,8 @@ app.use('/admin', adminRoutes)
 
 app.get('/', (req, res) => {
     res.send("Server is running......✅")
+    console.log("Server starting...");
+
 })
 
 
