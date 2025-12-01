@@ -1,89 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const users = require("../model/userSchema");
-const { Resend } = require("resend");
-
-
-
-// Temporary OTP storage
-let otpStore = {};
-
-// ------------------ TEST ROUTES ------------------
-router.get("/appointments", (req, res) => {
-  res.send("✅ Appointment API is working...");
-});
-
-router.get("/send-otp", (req, res) => {
-  res.send("✅ send otp API is working...");
-});
-
-router.get("/verify-otp", (req, res) => {
-  res.send("✅ verify otp API is working...");
-});
-
-// ------------------ SEND OTP ------------------
-router.post("/send-otp", async (req, res) => {
-  const resend = new Resend(process.env.RESEND_API_KEY);
-
-  const { email } = req.body;
-
-
-  if (!email) {
-    return res.status(400).json({
-      success: false,
-      message: "Email is required to send OTP",
-    });
-  }
-
-  const otp = Math.floor(100000 + Math.random() * 900000);
-  otpStore[email] = otp;
-
-  try {
-    await resend.emails.send({
-      from: "Nandini’s Make-Over <onboarding@resend.dev>",
-      to: email,
-      subject: "✨ OTP Verification for Appointment",
-      html: `
-      <div style="font-family: Poppins, sans-serif; background: #fff0f6; padding: 20px; border-radius: 10px; border: 1px solid #f8bbd0;">
-        <h2 style="color: #e91e63; text-align: center;">💅 Nandini's Make-Over Studio</h2>
-        <p style="font-size: 15px; color: #444;">Use the OTP below to verify your booking.</p>
-        <h1 style="background:#e91e63; color:#fff; padding:15px; text-align:center; border-radius:8px; letter-spacing:5px;">${otp}</h1>
-        <p style="color: #555;">This OTP is valid for <b>5 minutes</b>.</p>
-      </div>
-    `,
-    });
-
-    res.json({ success: true, message: "OTP sent successfully!" });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to send OTP",
-      error: error.message,
-    });
-  }
-});
-
-// ------------------ VERIFY OTP ------------------
-router.post("/verify-otp", (req, res) => {
-  const { email, otp } = req.body;
-
-  if (!email || !otp) {
-    return res.status(400).json({
-      success: false,
-      message: "Email and OTP are required",
-    });
-  }
-
-  if (parseInt(otp) === otpStore[email]) {
-    delete otpStore[email];
-    return res.json({ success: true, message: "OTP verified successfully!" });
-  } else {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid OTP. Please try again.",
-    });
-  }
-});
+const sendMail = require("./utils/sendMail");
 
 // ------------------ CREATE APPOINTMENT ------------------
 router.post("/appointments", async (req, res) => {
@@ -91,51 +9,46 @@ router.post("/appointments", async (req, res) => {
     const { name, email, phone, service, date, message } = req.body;
 
     if (!name || !email || !phone || !service || !date) {
-      return res.status(400).json({
-        success: false,
-        message: "All required fields must be provided",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "All required fields must be provided" });
     }
 
-    const result = new users(req.body);
-    const data = await result.save();
+    const newAppt = new users(req.body);
+    const savedAppt = await newAppt.save();
 
-    // ------------------ USER CONFIRMATION MAIL ------------------
-    await resend.emails.send({
-      from: "Nandini’s Make-Over <onboarding@resend.dev>",
+    // USER MAIL
+    await sendMail({
       to: email,
       subject: "🎉 Appointment Confirmed!",
       html: `
-        <h2>Appointment Confirmed!</h2>
-        <p>Dear <b>${name}</b>,</p>
-        <p>Your appointment has been confirmed.</p>
+        <h2>Your Appointment is Confirmed</h2>
+        <p><b>Name:</b> ${name}</p>
         <p><b>Service:</b> ${service}</p>
         <p><b>Date:</b> ${date}</p>
-        <p>We look forward to seeing you!</p>
       `,
     });
 
-    // ------------------ ADMIN MAIL ------------------
-    await resend.emails.send({
-      from: "Nandini’s Make-Over <onboarding@resend.dev>",
+    // ADMIN MAIL
+    await sendMail({
       to: "nandinikadam631@gmail.com",
-      subject: "🆕 New Appointment Booked!",
+      subject: "📩 New Appointment Booked",
       html: `
-        <h2>New Appointment Alert</h2>
+        <h3>New Appointment</h3>
         <p><b>Name:</b> ${name}</p>
         <p><b>Email:</b> ${email}</p>
         <p><b>Phone:</b> ${phone}</p>
         <p><b>Service:</b> ${service}</p>
         <p><b>Date:</b> ${date}</p>
-        <p><b>Message:</b> ${message || "No message"}</p>
       `,
     });
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
-      message: "Appointment booked successfully!",
-      data,
+      message: "Appointment saved & emails sent successfully",
+      data: savedAppt,
     });
+
   } catch (err) {
     return res.status(500).json({
       success: false,

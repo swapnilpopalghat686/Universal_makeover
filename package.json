@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@getbrevo/brevo": "^3.0.1",
+    "resend": "^6.5.2"
+  }
+}
