@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const nodemailer = require("nodemailer");
 const users = require("../model/userSchema");
+const { Resend } = require("resend");
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Temporary OTP storage
 let otpStore = {};
@@ -33,23 +35,12 @@ router.post("/send-otp", async (req, res) => {
   const otp = Math.floor(100000 + Math.random() * 900000);
   otpStore[email] = otp;
 
- const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false,   // Render वर Gmail block होऊ नये म्हणून
-  }
-});
-
-
-  const mailOptions = {
-    from: '"Nandini’s Make-Over 💄" <nandinikadam631@gmail.com>',
-    to: email,
-    subject: "✨ OTP Verification for Appointment",
-    html: `
+  try {
+    await resend.emails.send({
+      from: "Nandini’s Make-Over <onboarding@resend.dev>",
+      to: email,
+      subject: "✨ OTP Verification for Appointment",
+      html: `
       <div style="font-family: Poppins, sans-serif; background: #fff0f6; padding: 20px; border-radius: 10px; border: 1px solid #f8bbd0;">
         <h2 style="color: #e91e63; text-align: center;">💅 Nandini's Make-Over Studio</h2>
         <p style="font-size: 15px; color: #444;">Use the OTP below to verify your booking.</p>
@@ -57,10 +48,8 @@ router.post("/send-otp", async (req, res) => {
         <p style="color: #555;">This OTP is valid for <b>5 minutes</b>.</p>
       </div>
     `,
-  };
+    });
 
-  try {
-    await transporter.sendMail(mailOptions);
     res.json({ success: true, message: "OTP sent successfully!" });
   } catch (error) {
     res.status(500).json({
@@ -108,42 +97,36 @@ router.post("/appointments", async (req, res) => {
     const result = new users(req.body);
     const data = await result.save();
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    // User mail
-    const userMail = {
-      from: '"Nandini’s Make-Over 💅" <nandinikadam631@gmail.com>',
+    // ------------------ USER CONFIRMATION MAIL ------------------
+    await resend.emails.send({
+      from: "Nandini’s Make-Over <onboarding@resend.dev>",
       to: email,
       subject: "🎉 Appointment Confirmed!",
       html: `
         <h2>Appointment Confirmed!</h2>
         <p>Dear <b>${name}</b>,</p>
         <p>Your appointment has been confirmed.</p>
+        <p><b>Service:</b> ${service}</p>
+        <p><b>Date:</b> ${date}</p>
+        <p>We look forward to seeing you!</p>
       `,
-    };
+    });
 
-    // Admin mail
-    const adminMail = {
-      from: '"Nandini’s Make-Over 💅" <nandinikadam631@gmail.com>',
+    // ------------------ ADMIN MAIL ------------------
+    await resend.emails.send({
+      from: "Nandini’s Make-Over <onboarding@resend.dev>",
       to: "nandinikadam631@gmail.com",
       subject: "🆕 New Appointment Booked!",
       html: `
-        <h2>New Appointment</h2>
-        <p>Name: ${name}</p>
-        <p>Email: ${email}</p>
-        <p>Phone: ${phone}</p>
-        <p>Service: ${service}</p>
+        <h2>New Appointment Alert</h2>
+        <p><b>Name:</b> ${name}</p>
+        <p><b>Email:</b> ${email}</p>
+        <p><b>Phone:</b> ${phone}</p>
+        <p><b>Service:</b> ${service}</p>
+        <p><b>Date:</b> ${date}</p>
+        <p><b>Message:</b> ${message || "No message"}</p>
       `,
-    };
-
-    await transporter.sendMail(userMail);
-    await transporter.sendMail(adminMail);
+    });
 
     return res.status(201).json({
       success: true,
